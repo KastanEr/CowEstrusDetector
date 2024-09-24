@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload File</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: #23c7ac;
+        }
+        #result {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        #preview {
+            margin-top: 20px;
+        }
+        img {
+            max-height: 720px;
+        }
+        #back-button {
+            background-color: #23c7ac;
+            color: #121212;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #back-button:hover {
+            background-color: #1b998b;
+        }
+    </style>
+</head>
+<body>
+    <div id="result">
+        <h1>모델 테스트 결과</h1>
+        <img src="/image/image.jpg" alt="Result Image">
+        <br>
+        <button id="back-button" onclick="goBack()">Back</button>
+    </div>
+
+    <script>
+        function goBack() {
+            window.location.href = "/";
+        }
+    </script>
+    </div>
+</body>
+</html>
