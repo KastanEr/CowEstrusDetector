@@ -1,2 +1,5 @@
 # AI Model
 *.pth
+
+# Apple file system
+*.DS_Store
