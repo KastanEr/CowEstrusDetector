@@ -48,12 +48,20 @@
 <body>
     <div id="result">
         <h1>모델 테스트 결과</h1>
-        <img src="/image/image.jpg" alt="Result Image">
+        <img id="result-image" src="" alt="Result Image">
         <br>
         <button id="back-button" onclick="goBack()">Back</button>
     </div>
 
     <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const key = urlParams.get('key'); // 'key'는 쿼리 파라미터 이름
+
+        if (key) {
+            const imagePath = `/image/${key}.jpg`;
+            document.getElementById('result-image').src = imagePath;
+        }
+
         function goBack() {
             window.location.href = "/";
         }

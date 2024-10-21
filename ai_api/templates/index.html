@@ -32,6 +32,14 @@
             padding: 5px;
             margin-top: 10px;
         }
+        input[type="text"] {
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 5px;
+            margin-top: 10px;
+        }
         input[type="submit"] {
             background-color: #23c7ac;
             color: #121212;
@@ -54,24 +62,48 @@
     </style>
 </head>
 <body>
-    <form action="/upload/" enctype="multipart/form-data" method="post">
+    <form id="uploadForm">
         <h1>모델 테스트 페이지</h1>
         <div id="preview"></div>
-        <input type="file" name="file" id="fileInput" accept="image/*">
+        <input type="file" name="file" id="fileInput" accept="image/*" required><br>
+        
+        <input type="text" name="location" id="locationInput" placeholder="Location" required><br>
+        <input type="text" name="cctv" id="cctvInput" placeholder="CCTV" required><br>
+        
         <input type="submit" value="Upload">
     </form>
 
     <script>
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('preview');
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Image Preview">`;
-                };
-                reader.readAsDataURL(file);
-            }
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            const locationInput = parseInt(document.getElementById('locationInput').value);
+            const cctvInput = parseInt(document.getElementById('cctvInput').value);
+            const formData = new FormData();
+
+            formData.append('file', fileInput.files[0]);
+            formData.append('location', locationInput);
+            formData.append('cctv', cctvInput);
+
+            fetch('/upload/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            })
+            .then(data => {
+                const imageName = data.image_name;
+                window.location.href = `/result?key=${encodeURIComponent(imageName)}`;
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
         });
     </script>
 </body>

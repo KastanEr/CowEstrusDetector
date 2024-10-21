@@ -2,10 +2,19 @@
 *.pth
 
 # Apple file system
-*.DS_Store
+.DS_Store
 
 # VS Code
 .vscode/
+
+# Python
+__pycache__/
+
+# Database
+*.db
+
+# Prediction Image
+ai_api/static/pred_image/*
 
 # ETC
 etc/
