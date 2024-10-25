@@ -366,7 +366,7 @@ class _MyStatisticsPageState extends State<MyStatisticsPage> {
         onTap: (index) {
           switch (index) {
             case 0:
-              context.go('/');
+              context.go('/home');
             case 2:
               context.go('/history');
           }

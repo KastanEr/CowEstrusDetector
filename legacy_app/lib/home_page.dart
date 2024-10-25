@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({super.key});
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -12,7 +12,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int selectedIndex = 1;
 
-  Widget getTitles(double value, TitleMeta meta) {
+  Widget getDistrictTitles(double value, TitleMeta meta) {
     final style = TextStyle(
       fontWeight: FontWeight.bold,
       fontSize: 14,
@@ -47,6 +47,98 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Text(text, style: style),
     );
   }
+
+  Widget getTimeTitles(double value, TitleMeta meta) {
+    final style = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 10,
+    );
+    String text;
+    switch (value.toInt()) {
+      case 0:
+        text = '00';
+        break;
+      case 1:
+        text = '01';
+        break;
+      case 2:
+        text = '02';
+        break;
+      case 3:
+        text = '03';
+        break;
+      case 4:
+        text = '04';
+        break;
+      case 5:
+        text = '05';
+        break;
+      case 6:
+        text = '06';
+        break;
+      case 7:
+        text = '07';
+        break;
+      case 8:
+        text = '08';
+        break;
+      case 9:
+        text = '09';
+        break;
+      case 10:
+        text = '10';
+        break;
+      case 11:
+        text = '11';
+        break;
+      case 12:
+        text = '12';
+        break;
+      case 13:
+        text = '13';
+        break;
+      case 14:
+        text = '14';
+        break;
+      case 15:
+        text = '15';
+        break;
+      case 16:
+        text = '16';
+        break;
+      case 17:
+        text = '17';
+        break;
+      case 18:
+        text = '18';
+        break;
+      case 19:
+        text = '19';
+        break;
+      case 20:
+        text = '20';
+        break;
+      case 21:
+        text = '21';
+        break;
+      case 22:
+        text = '22';
+        break;
+      case 23:
+        text = '23';
+        break;
+      default:
+        text = '';
+        break;
+    }
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      space: 4,
+      child: Text(text, style: style),
+    );
+  }
+
+  int touchedGroupIndex = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('일일 현황', style: TextStyle(fontSize: 20)),
+                      const Text('구획별 일일 현황', style: TextStyle(fontSize: 20)),
                       Expanded(
                         child: Container(
                           margin: EdgeInsets.all(20),
@@ -104,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   sideTitles: SideTitles(
                                     showTitles: true,
                                     reservedSize: 30,
-                                    getTitlesWidget: getTitles,
+                                    getTitlesWidget: getDistrictTitles,
                                   ),
                                 ),
                                 topTitles: const AxisTitles(
@@ -115,57 +207,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
                               barGroups: [
-                                BarChartGroupData(
-                                  x: 0,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: 1,
-                                    ),
-                                  ],
-                                  showingTooltipIndicators: [0],
-                                ),
-                                BarChartGroupData(
-                                  x: 1,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: 0,
-                                    )
-                                  ],
-                                ),
-                                BarChartGroupData(
-                                  x: 2,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: 0,
-                                    )
-                                  ],
-                                ),
-                                BarChartGroupData(
-                                  x: 3,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: 1,
-                                    )
-                                  ],
-                                  showingTooltipIndicators: [0],
-                                ),
-                                BarChartGroupData(
-                                  x: 4,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: 0,
-                                    )
-                                  ],
-                                ),
-                                BarChartGroupData(
-                                  x: 5,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: 3,
-                                    )
-                                  ],
-                                  showingTooltipIndicators: [0],
-                                ),
+                                for (int i = 0; i < 6; i++)
+                                  BarChartGroupData(
+                                    x: i,
+                                    barRods: [
+                                      BarChartRodData(
+                                          toY: (i==0 || i==1 || i==3 || i==5)? 1 : 0,
+                                      ),
+                                    ],
+                                    showingTooltipIndicators: (i==0 || i==1 || i==3 || i==5)? [0] : [],
+                                  ),
                               ],
                             ),
                           ),
@@ -184,58 +235,83 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Center(
-                        child: Text(
-                          '3개월 동안 발정이 많았던 시간대',
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ),
+                      const Text('시간별 일일 현황', style: TextStyle(fontSize: 20)),
                       Expanded(
-                        child: ListTile(
-                          leading: Text(
-                            '1st : 20 - 21',
-                            style: TextStyle(
-                              fontSize: 15,
+                        child: Container(
+                          margin: const EdgeInsets.all(20),
+                          child: BarChart(
+                            BarChartData(
+                              alignment: BarChartAlignment.spaceAround,
+                              minY:0,
+                              maxY:10,
+                              titlesData: FlTitlesData(
+                                leftTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 30,
+                                    getTitlesWidget: getTimeTitles,
+                                  ),
+                                ),
+                                topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                              ),
+                              barGroups: [
+                                for (int i = 0; i < 24; i++)
+                                  BarChartGroupData(
+                                    x: i,
+                                    barRods: [
+                                      BarChartRodData(
+                                        toY: (i==4 || i==12 || i==17 || i==22)? 1 : 0,
+                                      ),
+                                    ],
+                                    showingTooltipIndicators: touchedGroupIndex == i ? [0] : [],
+                                  )
+                              ],
+                              barTouchData: BarTouchData(
+                                enabled: true,
+                                handleBuiltInTouches: false,
+                                touchTooltipData: BarTouchTooltipData(
+                                  getTooltipItem: (
+                                      BarChartGroupData group,
+                                      int groupIndex,
+                                      BarChartRodData rod,
+                                      int rodIndex,
+                                      ) {
+                                    return BarTooltipItem(
+                                      rod.toY.toString(),
+                                      TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: rod.color,
+                                        fontSize: 18,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                touchCallback: (event, response) {
+                                  if (event.isInterestedForInteractions &&
+                                      response != null &&
+                                      response.spot != null) {
+                                    setState(() {
+                                      touchedGroupIndex = response.spot!.touchedBarGroupIndex;
+                                    });
+                                  } else {
+                                    setState(() {
+                                      touchedGroupIndex = -1;
+                                    });
+                                  }
+                                },
+                              ),
                             ),
                           ),
-                          title: Text(
-                            '12회',
-                            style: TextStyle(
-                              fontSize: 15,
-                            ),
-                          ),
                         ),
                       ),
-                      Expanded(
-                          child: ListTile(
-                        leading: Text(
-                          '2nd : 05 - 06',
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
-                        ),
-                        title: Text(
-                          '8회',
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
-                        ),
-                      )),
-                      Expanded(
-                          child: ListTile(
-                        leading: Text(
-                          '3rd : 14 - 15',
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
-                        ),
-                        title: Text(
-                          '5회',
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
-                        ),
-                      )),
                     ],
                   ),
                 ),
