@@ -22,11 +22,13 @@ class _MyRegisterPageState extends State<MyRegisterPage> {
 
   final idTextEditingController = TextEditingController();
   final pwTextEditingController = TextEditingController();
+  final pwCheckTextEditingController = TextEditingController();
 
   @override
   void dispose() {
     idTextEditingController.dispose();
     pwTextEditingController.dispose();
+    pwCheckTextEditingController.dispose();
     super.dispose();
   }
 
@@ -70,6 +72,7 @@ class _MyRegisterPageState extends State<MyRegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset : false,
       appBar: AppBar(
         backgroundColor: Colors.green,
         leading: IconButton(
@@ -122,15 +125,27 @@ class _MyRegisterPageState extends State<MyRegisterPage> {
               ),
               Container(
                 padding: EdgeInsets.all(10),
+                child: TextField(
+                  controller: pwCheckTextEditingController,
+                  obscureText: true,
+                  decoration: InputDecoration(labelText: "비밀번호 확인"),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(10),
                 child: ElevatedButton(
                   onPressed: () {
                     id = idTextEditingController.text;
                     password = pwTextEditingController.text;
+                    String passwordCheck = pwCheckTextEditingController.text;
 
-                    (id == '' || password == '')
+                    (id == '' || password == '' || passwordCheck == '')
                         ? showPopUp(
                             context, "회원가입에 실패했습니다.\n아이디나 비밀번호를 입력해주세요.", false)
-                        : register(context);
+                        : ((password == passwordCheck)
+                            ? register(context)
+                            : showPopUp(context,
+                                "회원가입에 실패했습니다.\n입력하신 비밀번호가 불일치합니다.", false));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
