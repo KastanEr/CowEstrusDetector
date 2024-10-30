@@ -24,6 +24,38 @@ class _MyLoginPageState extends State<MyLoginPage> {
     super.dispose();
   }
 
+  void showPopUp(BuildContext context, String msg, bool success) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  msg,
+                  style: TextStyle(fontSize: 17),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: IconButton(
+                    onPressed: () {
+                      success ? context.go('/') : context.pop();
+                    },
+                    icon: const Icon(Icons.close),
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,38 +101,13 @@ class _MyLoginPageState extends State<MyLoginPage> {
                       onPressed: () {
                         id = idTextEditingController.text;
                         password = pwTextEditingController.text;
-                        (id == account[0] && password == account[1])
+                        (id == '' || password == '')
+                            ? showPopUp(
+                            context, "아이디나 비밀번호를 입력해주세요.", false)
+                            : ((id == account[0] && password == account[1])
                             ? context.go('/home')
-                            : showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return Dialog(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(15),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "로그인에 실패하였습니다.\n아이디나 비밀번호를 확인해주세요.",
-                                            style: TextStyle(fontSize: 17),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8),
-                                            child: IconButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              icon: const Icon(Icons.close),
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
+                            : showPopUp(context,
+                            "로그인에 실패하였습니다.\n아이디나 비밀번호를 확인해주세요.", false));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
