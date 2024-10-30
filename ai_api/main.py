@@ -1,12 +1,13 @@
 
 from fastapi import FastAPI, Depends, HTTPException, File, Request, UploadFile, Form
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import ValidationError
 from database import init_db, SessionLocal
-import crud, models, schemas
+import crud, schemas, auth
 from datetime import datetime, timedelta
 from detector import CowBehaviorDetector
 from typing import List
@@ -21,6 +22,8 @@ if not os.path.exists(save_dir):
 detector = CowBehaviorDetector(model_path=model_path)
 
 app = FastAPI()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 init_db()
 
@@ -70,6 +73,7 @@ async def upload_file_and_predict(request: Request, location: int = Form(...), c
 
     if "mounting" in results["classes"]:
         try:
+            results["confirm"] = 0
             prediction = schemas.PredictionBase.model_validate(results)
         except ValidationError:
             raise HTTPException(status_code=422, detail="Validation Error")
@@ -85,18 +89,66 @@ async def upload_file_and_predict(request: Request, location: int = Form(...), c
     return JSONResponse(content={"image_name": image_name})
 
 @app.get("/notifications", response_model=List[schemas.Notification])
-async def get_notification(db: Session = Depends(get_db)):
-    notifications = crud.get_notifications(db)
+async def get_notifications(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    auth.decode_token(token)
+    notifications = crud.get_notifications(db, skip, limit)
     return notifications
 
-@app.put("/notifications/read/{id}")
-async def read_notification(id: int, db: Session = Depends(get_db)):
-    if crud.update_notification_read(id, db):
-        return {"message": "Notification marked as read", "noti_id": id}
+@app.get("/history", response_model=List[schemas.Notification])
+async def get_history(date: str, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    auth.decode_token(token)
+    history = crud.get_history(db, date)
+    return history
+
+@app.get("/predictions", response_model=List[schemas.Prediction])
+async def get_predictions(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    auth.decode_token(token)
+    predictions = crud.get_predictions(db, skip, limit)
+    return predictions
+
+@app.put("/predictions/confirm/{id}")
+async def confirm_prediction(id: int, confirm: int, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    auth.decode_token(token)
+    if crud.update_prediction_confirm(db, id, confirm):
+        return {"id": id, "confirm": confirm}
     else:
-        raise HTTPException(status_code=404, detail="Notification not found")
-    
-@app.get("/frequency", response_model=List[schemas.Frequency])
-async def get_frequency(date: str, db: Session = Depends(get_db)):
-    frequency = crud.get_frequency(db, date)
+        raise HTTPException(status_code=404, detail="Prediction not found")
+
+@app.get("/frequency/location", response_model=List[schemas.LocationFrequency])
+async def get_location_frequency(start_date: str, end_date: str, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    auth.decode_token(token)
+    frequency = crud.get_location_frequency(db, start_date, end_date)
     return frequency
+
+@app.get("/frequency/time", response_model=List[schemas.TimeFrequency])
+async def get_time_frequency(start_date: str, end_date: str, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    auth.decode_token(token)
+    frequency = crud.get_time_frequency(db, start_date, end_date)
+    return frequency
+
+@app.post('/users/', response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, username=user.username)
+    if db_user is None:
+        raise HTTPException(status_code=400, detail='username already registered')
+    return crud.create_user(db=db, user=user)
+
+@app.get('/users/{username}', response_model=schemas.User)
+def get_user(username: str, db: Session = Depends(get_db)):
+    user = crud.get_user(db, username=username)
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    return user
+
+@app.get('/users/', response_model=List[schemas.User])
+def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
+
+@app.post("/token")
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = auth.authenticate_user(db, form_data.username, form_data.password)
+    if user is None:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    access_token = auth.create_access_token(data={"sub": user.username})
+    return {"access_token": access_token, "token_type": "bearer"}
