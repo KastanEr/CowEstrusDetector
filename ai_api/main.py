@@ -129,7 +129,7 @@ async def get_time_frequency(start_date: str, end_date: str, token: str = Depend
 @app.post('/users/', response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, username=user.username)
-    if db_user is None:
+    if db_user:
         raise HTTPException(status_code=400, detail='username already registered')
     return crud.create_user(db=db, user=user)
 
