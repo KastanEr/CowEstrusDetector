@@ -41,14 +41,14 @@ class CowBehaviorDetector:
         thing_classes = [category['name'] for category in self.categories]
         MetadataCatalog.get("cow_polygon_val").set(thing_classes=thing_classes)
 
-    def _save_image(self, image, visualizer, image_name):
+    def save_image(self, visualizer, image_name):
         save_path = os.path.join(self.save_dir, f"{image_name}.jpg")
         plt.figure(figsize=(10, 10))
         plt.imshow(visualizer.get_image()[:, :, ::-1])
         plt.axis("off")
         plt.savefig(save_path, bbox_inches='tight')
 
-    def predict(self, image_path: str, image_name: str):
+    def predict(self, image_path: str):
         try:
             image = cv2.imread(image_path)
             if image is None:
@@ -65,13 +65,12 @@ class CowBehaviorDetector:
 
             visualizer = Visualizer(image[:, :, ::-1], metadata=metadata, scale=1.2, instance_mode=ColorMode.IMAGE_BW)
             visualizer = visualizer.draw_instance_predictions(outputs["instances"].to("cpu"))
-            self._save_image(image, visualizer, image_name)
             
             return {
                 "boxes": boxes.tensor.numpy().tolist(),
                 "scores": scores.numpy().tolist(),
                 "classes": [metadata.thing_classes[i] for i in classes]
-            }
+            }, visualizer
         except Exception as e:
             print(f"Error during prediction: {e}")
             return None
