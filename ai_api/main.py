@@ -66,29 +66,34 @@ async def upload_file_and_predict(request: Request, location: int = Form(...), c
         f.write(file.file.read())
 
     image_path = file_location
-    image_name = current_time
 
-    results = detector.predict(image_path=image_path, image_name=image_name)
+    results, visualizer = detector.predict(image_path=image_path)
+
+    if results is None:
+        raise HTTPException(status_code=422, detail="Prediction failed")
+
+    try:
+        results["confirm"] = 0
+        prediction = schemas.PredictionBase.model_validate(results)
+    except ValidationError:
+        raise HTTPException(status_code=422, detail="Validation Error")
+    
+    prediction = crud.create_prediction(db, prediction)
+
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Prediction creation failed")
+    
+    detector.save_image(visualizer, prediction.id)
 
     if results is None:
         raise HTTPException(status_code=422, detail="Prediction failed")
 
     if "mounting" in results["classes"]:
-        try:
-            results["confirm"] = 0
-            prediction = schemas.PredictionBase.model_validate(results)
-        except ValidationError:
-            raise HTTPException(status_code=422, detail="Validation Error")
-
-        prediction = crud.create_prediction(db, prediction)
-        if not prediction:
-            raise HTTPException(status_code=404, detail="Prediction creation failed")
-
         notification = crud.create_notification(db, location, cctv, current_time, prediction.id)
         if not notification:
             raise HTTPException(status_code=404, detail="Notification creation failed")
 
-    return JSONResponse(content={"image_name": image_name})
+    return JSONResponse(content={"image_name": f"{prediction.id}"})
 
 @app.get("/notifications", response_model=List[schemas.Notification])
 async def get_notifications(skip: int = 0, limit: int = 100, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
