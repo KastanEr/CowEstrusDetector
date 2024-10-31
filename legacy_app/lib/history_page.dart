@@ -5,22 +5,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class MyHistoryPage extends StatefulWidget {
-  const MyHistoryPage({super.key});
+  final String token;
+  const MyHistoryPage({super.key, required this.token});
 
   @override
   State<MyHistoryPage> createState() => _MyHistoryPageState();
 }
 
 class _MyHistoryPageState extends State<MyHistoryPage> {
-  DateTime selectedDay = DateTime.now();
-  DateTime focusedDay = DateTime.now();
+  DateTime selectedDay = DateTime.now().toUtc().add(Duration(hours: 9));
+  DateTime focusedDay = DateTime.now().toUtc().add(Duration(hours: 9));
 
   int selectedIndex = 1;
 
-  final Future<List<HistoryModel>> histories = ApiService.getHistories();
+  late Future<List<HistoryModel>> histories = ApiService.getHistories(
+      widget.token, DateFormat('yyyy-MM-dd').format(selectedDay));
 
   @override
   void initState() {
@@ -49,7 +52,7 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
               Icons.add_alert_outlined,
               color: Colors.white,
             ),
-            onPressed: () => context.push('/alarm'),
+            onPressed: () => context.push('/alarm', extra: widget.token),
           ),
         ],
       ),
@@ -69,10 +72,13 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
                           firstDay: DateTime(2000),
                           lastDay: DateTime(2050),
                           daysOfWeekHeight: 20,
-                          onDaySelected: (DateTime selectedDay, DateTime focusedDay) {
+                          onDaySelected:
+                              (DateTime selectedDay, DateTime focusedDay) {
                             setState(() {
                               this.selectedDay = selectedDay;
                               this.focusedDay = focusedDay;
+                              histories = ApiService.getHistories(widget.token,
+                                  DateFormat('yyyy-MM-dd').format(selectedDay));
                             });
                           },
                           selectedDayPredicate: (DateTime day) {
@@ -108,8 +114,45 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
                 ],
               );
             }
-            return const Center(
-              child: CircularProgressIndicator(),
+            return TableCalendar(
+              locale: 'ko_KR',
+              focusedDay: focusedDay,
+              firstDay: DateTime(2000),
+              lastDay: DateTime(2050),
+              daysOfWeekHeight: 20,
+              onDaySelected: (DateTime selectedDay, DateTime focusedDay) {
+                setState(() {
+                  this.selectedDay = selectedDay;
+                  this.focusedDay = focusedDay;
+                  histories = ApiService.getHistories(widget.token,
+                      DateFormat('yyyy-MM-dd').format(selectedDay));
+                });
+              },
+              selectedDayPredicate: (DateTime day) {
+                return isSameDay(selectedDay, day);
+              },
+              headerStyle: const HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+              ),
+              calendarStyle: CalendarStyle(
+                selectedTextStyle: const TextStyle(
+                  color: Colors.white,
+                ),
+                selectedDecoration: const BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                todayTextStyle: const TextStyle(
+                  color: Colors.green,
+                ),
+                todayDecoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.green,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+              ),
             );
           },
         ),
@@ -135,9 +178,9 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
         onTap: (index) {
           switch (index) {
             case 0:
-              context.go('/statistics');
+              context.go('/statistics', extra: widget.token);
             case 2:
-              context.go('/home', extra:''); //TODO
+              context.go('/home', extra: widget.token);
           }
         },
       ),
@@ -162,10 +205,16 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
               ),
             ),
           ),
-          title: Text(history.title),
-          subtitle: Text(history.time),
-          onTap: () =>
-              context.go('/history/history_detail', extra: {'location': history.location, 'cctv': history.cctv, 'time': history.time, 'type': history.type}),
+          title: Text('${history.location}구획에서 승가 행위가 감지되었습니다.'),
+          subtitle: Text(
+              '${history.time.split(' ')[1].split(':')[0]}:${history.time.split(' ')[1].split(':')[1]}'),
+          onTap: () => context.go('/history/history_detail', extra: {
+            'token': widget.token,
+            'location': history.location.toString(),
+            'cctv': history.cctv.toString(),
+            'time': history.time,
+            'pred_id': history.pred_id.toString()
+          }),
         );
       },
       separatorBuilder: (context, index) => const SizedBox(

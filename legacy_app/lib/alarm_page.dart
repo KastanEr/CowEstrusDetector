@@ -2,16 +2,21 @@ import 'package:estrus_detector/models/history_model.dart';
 import 'package:estrus_detector/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class MyAlarmPage extends StatefulWidget {
-  const MyAlarmPage({super.key});
+  final String token;
+  const MyAlarmPage({super.key, required this.token});
 
   @override
   State<MyAlarmPage> createState() => _MyAlarmPageState();
 }
 
 class _MyAlarmPageState extends State<MyAlarmPage> {
-  final Future<List<HistoryModel>> histories = ApiService.getHistories();
+  late Future<List<HistoryModel>> histories = ApiService.getHistories(
+      widget.token,
+      DateFormat('yyyy-MM-dd')
+          .format(DateTime.now().toUtc().add(Duration(hours: 9))));
 
   @override
   Widget build(BuildContext context) {
@@ -78,10 +83,15 @@ class _MyAlarmPageState extends State<MyAlarmPage> {
               ),
             ),
           ),
-          title: Text(history.title),
-          subtitle: Text(history.time),
-          onTap: () =>
-              context.go('/history/history_detail', extra: {'location': history.location, 'cctv': history.cctv, 'time': history.time, 'type': history.type}),
+          title: Text(
+              '${history.location}구획에서 ${history.time.split(' ')[1].split(':')[0]}시 ${history.time.split(' ')[1].split(':')[1]}분에 승가 행위가 감지되었습니다. 확인 바랍니다.'),
+          onTap: () => context.go('/history/history_detail', extra: {
+            'token': widget.token,
+            'location': history.location.toString(),
+            'cctv': history.cctv.toString(),
+            'time': history.time,
+            'pred_id': history.pred_id.toString()
+          }),
         );
       },
       separatorBuilder: (context, index) => const SizedBox(

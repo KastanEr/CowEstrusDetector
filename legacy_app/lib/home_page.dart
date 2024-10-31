@@ -1,6 +1,9 @@
+import 'package:estrus_detector/services/api_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'models/history_model.dart';
 
 class MyHomePage extends StatefulWidget {
   final String token;
@@ -12,6 +15,32 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int selectedIndex = 1;
+  String formattedDate = DateFormat('yyyy-MM-dd')
+      .format(DateTime.now().toUtc().add(Duration(hours: 9)));
+  late Future<List<HistoryModel>> histories =
+      ApiService.getHistories(widget.token, formattedDate);
+
+  double count(int x, String type, AsyncSnapshot<List<HistoryModel>> snapshot) {
+    double cnt = 0;
+    if (type == 'district') {
+      for (var history in snapshot.data!) {
+        if (history.location == x + 1) {
+          //location(district) is from 1 to 6
+          cnt += 1.0;
+        }
+      }
+      return cnt;
+    }
+    if (type == 'time') {
+      for (var history in snapshot.data!) {
+        if (DateTime.parse(history.time).hour == x) {
+          cnt += 1.0;
+        }
+      }
+      return cnt;
+    }
+    return -1.0;
+  }
 
   Widget getDistrictTitles(double value, TitleMeta meta) {
     final style = TextStyle(
@@ -162,164 +191,350 @@ class _MyHomePageState extends State<MyHomePage> {
               Icons.add_alert_outlined,
               color: Colors.white,
             ),
-            onPressed: () => context.push('/alarm'),
+            onPressed: () => context.push('/alarm', extra: widget.token),
           ),
         ],
       ),
       body: SafeArea(
-        child: Container(
-          color: Color(0xffd6d6d6),
-          child: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10)),
+        child: FutureBuilder(
+            future: histories,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Container(
+                  color: Color(0xffd6d6d6),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('구획별 일일 현황', style: TextStyle(fontSize: 20)),
                       Expanded(
                         child: Container(
-                          margin: EdgeInsets.all(20),
-                          child: BarChart(
-                            BarChartData(
-                              alignment: BarChartAlignment.spaceAround,
-                              minY:0,
-                              maxY:10,
-                              titlesData: FlTitlesData(
-                                leftTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    reservedSize: 30,
-                                    getTitlesWidget: getDistrictTitles,
+                          margin: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('구획별 일일 현황',
+                                  style: TextStyle(fontSize: 20)),
+                              Expanded(
+                                child: Container(
+                                  margin: EdgeInsets.all(20),
+                                  child: BarChart(
+                                    BarChartData(
+                                      alignment: BarChartAlignment.spaceAround,
+                                      minY: 0,
+                                      maxY: 10,
+                                      titlesData: FlTitlesData(
+                                        leftTitles: const AxisTitles(
+                                          sideTitles:
+                                              SideTitles(showTitles: false),
+                                        ),
+                                        bottomTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: true,
+                                            reservedSize: 30,
+                                            getTitlesWidget: getDistrictTitles,
+                                          ),
+                                        ),
+                                        topTitles: const AxisTitles(
+                                          sideTitles:
+                                              SideTitles(showTitles: false),
+                                        ),
+                                        rightTitles: const AxisTitles(
+                                          sideTitles:
+                                              SideTitles(showTitles: false),
+                                        ),
+                                      ),
+                                      barGroups: [
+                                        for (int i = 0; i < 6; i++)
+                                          BarChartGroupData(
+                                            x: i,
+                                            barRods: [
+                                              BarChartRodData(
+                                                toY: count(
+                                                    i, 'district', snapshot),
+                                              ),
+                                            ],
+                                            showingTooltipIndicators: (count(i,
+                                                        'district', snapshot) >
+                                                    0)
+                                                ? [0]
+                                                : [],
+                                          ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                topTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                rightTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
                                 ),
                               ),
-                              barGroups: [
-                                for (int i = 0; i < 6; i++)
-                                  BarChartGroupData(
-                                    x: i,
-                                    barRods: [
-                                      BarChartRodData(
-                                          toY: (i==0 || i==1 || i==3 || i==5)? 1 : 0,
+                            ],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(10, 0, 10, 10),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('시간별 일일 현황',
+                                  style: TextStyle(fontSize: 20)),
+                              Expanded(
+                                child: Container(
+                                  margin: const EdgeInsets.all(20),
+                                  child: BarChart(
+                                    BarChartData(
+                                      alignment: BarChartAlignment.spaceAround,
+                                      minY: 0,
+                                      maxY: 10,
+                                      titlesData: FlTitlesData(
+                                        leftTitles: const AxisTitles(
+                                          sideTitles:
+                                              SideTitles(showTitles: false),
+                                        ),
+                                        bottomTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: true,
+                                            reservedSize: 30,
+                                            getTitlesWidget: getTimeTitles,
+                                          ),
+                                        ),
+                                        topTitles: const AxisTitles(
+                                          sideTitles:
+                                              SideTitles(showTitles: false),
+                                        ),
+                                        rightTitles: const AxisTitles(
+                                          sideTitles:
+                                              SideTitles(showTitles: false),
+                                        ),
                                       ),
-                                    ],
-                                    showingTooltipIndicators: (i==0 || i==1 || i==3 || i==5)? [0] : [],
+                                      barGroups: [
+                                        for (int i = 0; i < 24; i++)
+                                          BarChartGroupData(
+                                            x: i,
+                                            barRods: [
+                                              BarChartRodData(
+                                                toY: count(i, 'time', snapshot),
+                                              ),
+                                            ],
+                                            showingTooltipIndicators:
+                                                touchedGroupIndex == i
+                                                    ? [0]
+                                                    : [],
+                                          )
+                                      ],
+                                      barTouchData: BarTouchData(
+                                        enabled: true,
+                                        handleBuiltInTouches: false,
+                                        touchTooltipData: BarTouchTooltipData(
+                                          getTooltipItem: (
+                                            BarChartGroupData group,
+                                            int groupIndex,
+                                            BarChartRodData rod,
+                                            int rodIndex,
+                                          ) {
+                                            return BarTooltipItem(
+                                              rod.toY.toString(),
+                                              TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: rod.color,
+                                                fontSize: 18,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        touchCallback: (event, response) {
+                                          if (event
+                                                  .isInterestedForInteractions &&
+                                              response != null &&
+                                              response.spot != null) {
+                                            setState(() {
+                                              touchedGroupIndex = response
+                                                  .spot!.touchedBarGroupIndex;
+                                            });
+                                          } else {
+                                            setState(() {
+                                              touchedGroupIndex = -1;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ),
                                   ),
-                              ],
-                            ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.fromLTRB(10, 0, 10, 10),
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('시간별 일일 현황', style: TextStyle(fontSize: 20)),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.all(20),
-                          child: BarChart(
-                            BarChartData(
-                              alignment: BarChartAlignment.spaceAround,
-                              minY:0,
-                              maxY:10,
-                              titlesData: FlTitlesData(
-                                leftTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    reservedSize: 30,
-                                    getTitlesWidget: getTimeTitles,
+                );
+              }
+              return Container(
+                color: Color(0xffd6d6d6),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        margin: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('구획별 일일 현황',
+                                style: TextStyle(fontSize: 20)),
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.all(20),
+                                child: BarChart(
+                                  BarChartData(
+                                    alignment: BarChartAlignment.spaceAround,
+                                    minY: 0,
+                                    maxY: 10,
+                                    titlesData: FlTitlesData(
+                                      leftTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+                                          reservedSize: 30,
+                                          getTitlesWidget: getDistrictTitles,
+                                        ),
+                                      ),
+                                      topTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      rightTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                    ),
+                                    barGroups: [
+                                      for (int i = 0; i < 6; i++)
+                                        BarChartGroupData(
+                                          x: i,
+                                          barRods: [
+                                            BarChartRodData(
+                                              toY: 0,
+                                            ),
+                                          ],
+                                        ),
+                                    ],
                                   ),
                                 ),
-                                topTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                rightTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                              ),
-                              barGroups: [
-                                for (int i = 0; i < 24; i++)
-                                  BarChartGroupData(
-                                    x: i,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: (i==4 || i==12 || i==17 || i==22)? 1 : 0,
-                                      ),
-                                    ],
-                                    showingTooltipIndicators: touchedGroupIndex == i ? [0] : [],
-                                  )
-                              ],
-                              barTouchData: BarTouchData(
-                                enabled: true,
-                                handleBuiltInTouches: false,
-                                touchTooltipData: BarTouchTooltipData(
-                                  getTooltipItem: (
-                                      BarChartGroupData group,
-                                      int groupIndex,
-                                      BarChartRodData rod,
-                                      int rodIndex,
-                                      ) {
-                                    return BarTooltipItem(
-                                      rod.toY.toString(),
-                                      TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: rod.color,
-                                        fontSize: 18,
-                                      ),
-                                    );
-                                  },
-                                ),
-                                touchCallback: (event, response) {
-                                  if (event.isInterestedForInteractions &&
-                                      response != null &&
-                                      response.spot != null) {
-                                    setState(() {
-                                      touchedGroupIndex = response.spot!.touchedBarGroupIndex;
-                                    });
-                                  } else {
-                                    setState(() {
-                                      touchedGroupIndex = -1;
-                                    });
-                                  }
-                                },
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        margin: EdgeInsets.fromLTRB(10, 0, 10, 10),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('시간별 일일 현황',
+                                style: TextStyle(fontSize: 20)),
+                            Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.all(20),
+                                child: BarChart(
+                                  BarChartData(
+                                    alignment: BarChartAlignment.spaceAround,
+                                    minY: 0,
+                                    maxY: 10,
+                                    titlesData: FlTitlesData(
+                                      leftTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+                                          reservedSize: 30,
+                                          getTitlesWidget: getTimeTitles,
+                                        ),
+                                      ),
+                                      topTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                      rightTitles: const AxisTitles(
+                                        sideTitles:
+                                            SideTitles(showTitles: false),
+                                      ),
+                                    ),
+                                    barGroups: [
+                                      for (int i = 0; i < 24; i++)
+                                        BarChartGroupData(
+                                          x: i,
+                                          barRods: [
+                                            BarChartRodData(
+                                              toY: 0,
+                                            ),
+                                          ],
+                                          showingTooltipIndicators:
+                                              touchedGroupIndex == i ? [0] : [],
+                                        )
+                                    ],
+                                    barTouchData: BarTouchData(
+                                      enabled: true,
+                                      handleBuiltInTouches: false,
+                                      touchTooltipData: BarTouchTooltipData(
+                                        getTooltipItem: (
+                                          BarChartGroupData group,
+                                          int groupIndex,
+                                          BarChartRodData rod,
+                                          int rodIndex,
+                                        ) {
+                                          return BarTooltipItem(
+                                            rod.toY.toString(),
+                                            TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: rod.color,
+                                              fontSize: 18,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      touchCallback: (event, response) {
+                                        if (event.isInterestedForInteractions &&
+                                            response != null &&
+                                            response.spot != null) {
+                                          setState(() {
+                                            touchedGroupIndex = response
+                                                .spot!.touchedBarGroupIndex;
+                                          });
+                                        } else {
+                                          setState(() {
+                                            touchedGroupIndex = -1;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        ),
+              );
+            }),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -342,7 +557,12 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: (index) {
           switch (index) {
             case 0:
-              context.go('/history');
+              context.go('/history', extra: widget.token);
+            case 1:
+              setState(() {
+                histories =
+                    ApiService.getHistories(widget.token, formattedDate);
+              });
             case 2:
               context.go('/statistics', extra: widget.token);
           }

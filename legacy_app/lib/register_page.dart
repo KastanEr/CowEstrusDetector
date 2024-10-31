@@ -54,14 +54,17 @@ class _MyRegisterPageState extends State<MyRegisterPage> {
     );
   }
 
-  Future<void> register(BuildContext context, String username, String password) async {
-    await ApiService.createUser(username, password)? showPopUp(context, "회원가입에 성공했습니다.", true) : showPopUp(context, "이미 존재하는 ID입니다.\n다른 ID를 사용해주세요.", false);
+  Future<void> register(
+      BuildContext context, String username, String password) async {
+    await ApiService.createUser(username, password)
+        ? showPopUp(context, "회원가입에 성공했습니다.", true)
+        : showPopUp(context, "이미 존재하는 ID입니다.\n다른 ID를 사용해주세요.", false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset : false,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.green,
         leading: IconButton(
@@ -131,12 +134,11 @@ class _MyRegisterPageState extends State<MyRegisterPage> {
                     String passwordCheck = pwCheckTextEditingController.text;
 
                     (id == '' || password == '' || passwordCheck == '')
-                        ? showPopUp(
-                            context, "아이디, 비밀번호 칸을\n모두 채워주세요.", false)
+                        ? showPopUp(context, "아이디, 비밀번호 칸을\n모두 채워주세요.", false)
                         : ((password == passwordCheck)
                             ? register(context, id, password)
-                            : showPopUp(context,
-                                "비밀번호가 불일치합니다.\n다시 확인해주세요.", false));
+                            : showPopUp(
+                                context, "비밀번호가 불일치합니다.\n다시 확인해주세요.", false));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,

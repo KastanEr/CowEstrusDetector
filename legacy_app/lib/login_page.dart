@@ -10,7 +10,6 @@ class MyLoginPage extends StatefulWidget {
 }
 
 class _MyLoginPageState extends State<MyLoginPage> {
-
   final idTextEditingController = TextEditingController();
   final pwTextEditingController = TextEditingController();
 
@@ -53,15 +52,18 @@ class _MyLoginPageState extends State<MyLoginPage> {
     );
   }
 
-  Future<void> login(BuildContext context, String username, String password) async {
+  Future<void> login(
+      BuildContext context, String username, String password) async {
     String token = await ApiService.getLoginToken(username, password);
-    token!=''? context.go('/home', extra: token) : showPopUp(context, "로그인에 실패하였습니다.\n비밀번호를 확인해주세요.", false);
+    token != ''
+        ? context.go('/home', extra: token)
+        : showPopUp(context, "로그인에 실패하였습니다.\n비밀번호를 확인해주세요.", false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset : false,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.green,
       ),
@@ -104,12 +106,11 @@ class _MyLoginPageState extends State<MyLoginPage> {
                         String id = idTextEditingController.text;
                         String password = pwTextEditingController.text;
                         (id == '' || password == '')
-                            ? showPopUp(
-                            context, "아이디, 비밀번호를 입력해주세요.", false)
+                            ? showPopUp(context, "아이디, 비밀번호를 입력해주세요.", false)
                             : (await ApiService.existUser(id)
-                            ? login(context, id, password)
-                            : showPopUp(context,
-                            "존재하지 않는 아이디입니다.\n회원가입을 해주세요.", false));
+                                ? login(context, id, password)
+                                : showPopUp(context,
+                                    "존재하지 않는 아이디입니다.\n회원가입을 해주세요.", false));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
