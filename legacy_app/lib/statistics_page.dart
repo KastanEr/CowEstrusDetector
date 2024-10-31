@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class MyStatisticsPage extends StatefulWidget {
-  const MyStatisticsPage({super.key});
+  final String token;
+  const MyStatisticsPage({super.key, required this.token});
 
   @override
   State<MyStatisticsPage> createState() => _MyStatisticsPageState();
@@ -366,7 +367,7 @@ class _MyStatisticsPageState extends State<MyStatisticsPage> {
         onTap: (index) {
           switch (index) {
             case 0:
-              context.go('/home');
+              context.go('/home', extra: widget.token);
             case 2:
               context.go('/history');
           }

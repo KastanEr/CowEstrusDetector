@@ -137,7 +137,7 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
             case 0:
               context.go('/statistics');
             case 2:
-              context.go('/home');
+              context.go('/home', extra:''); //TODO
           }
         },
       ),

@@ -1,3 +1,4 @@
+import 'package:estrus_detector/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,10 +10,6 @@ class MyLoginPage extends StatefulWidget {
 }
 
 class _MyLoginPageState extends State<MyLoginPage> {
-  List<String> account = ['jeong', '1234']; //로그인 확인 용
-  // 해당 아이디와 비밀번호로 로그인 시 홈 화면으로 이동
-  String id = '';
-  String password = '';
 
   final idTextEditingController = TextEditingController();
   final pwTextEditingController = TextEditingController();
@@ -54,6 +51,11 @@ class _MyLoginPageState extends State<MyLoginPage> {
         );
       },
     );
+  }
+
+  Future<void> login(BuildContext context, String username, String password) async {
+    String token = await ApiService.getLoginToken(username, password);
+    token!=''? context.go('/home', extra: token) : showPopUp(context, "로그인에 실패하였습니다.\n비밀번호를 확인해주세요.", false);
   }
 
   @override
@@ -98,16 +100,16 @@ class _MyLoginPageState extends State<MyLoginPage> {
                 child: Row(
                   children: [
                     ElevatedButton(
-                      onPressed: () {
-                        id = idTextEditingController.text;
-                        password = pwTextEditingController.text;
+                      onPressed: () async {
+                        String id = idTextEditingController.text;
+                        String password = pwTextEditingController.text;
                         (id == '' || password == '')
                             ? showPopUp(
-                            context, "아이디나 비밀번호를 입력해주세요.", false)
-                            : ((id == account[0] && password == account[1])
-                            ? context.go('/home')
+                            context, "아이디, 비밀번호를 입력해주세요.", false)
+                            : (await ApiService.existUser(id)
+                            ? login(context, id, password)
                             : showPopUp(context,
-                            "로그인에 실패하였습니다.\n아이디나 비밀번호를 확인해주세요.", false));
+                            "존재하지 않는 아이디입니다.\n회원가입을 해주세요.", false));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,

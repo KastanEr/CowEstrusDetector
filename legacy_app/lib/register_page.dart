@@ -1,3 +1,4 @@
+import 'package:estrus_detector/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,18 +9,7 @@ class MyRegisterPage extends StatefulWidget {
   State<MyRegisterPage> createState() => _MyRegisterPageState();
 }
 
-class User<T> {
-  final T id;
-  final T pw;
-
-  User(this.id, this.pw);
-}
-
 class _MyRegisterPageState extends State<MyRegisterPage> {
-  List<User<String>> db = []; //임시 DB 역할
-  String id = '';
-  String password = '';
-
   final idTextEditingController = TextEditingController();
   final pwTextEditingController = TextEditingController();
   final pwCheckTextEditingController = TextEditingController();
@@ -64,9 +54,8 @@ class _MyRegisterPageState extends State<MyRegisterPage> {
     );
   }
 
-  void register(BuildContext context) {
-    db.add(User(id, password)); //db에 저장
-    showPopUp(context, "회원가입에 성공했습니다.", true);
+  Future<void> register(BuildContext context, String username, String password) async {
+    await ApiService.createUser(username, password)? showPopUp(context, "회원가입에 성공했습니다.", true) : showPopUp(context, "이미 존재하는 ID입니다.\n다른 ID를 사용해주세요.", false);
   }
 
   @override
@@ -100,11 +89,13 @@ class _MyRegisterPageState extends State<MyRegisterPage> {
               ),
               Container(
                 padding: const EdgeInsets.all(10),
-                child: Text(
-                  "회원가입에 사용할 아이디와 비밀번호를 입력해주세요",
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 16,
+                child: Center(
+                  child: Text(
+                    "회원가입에 사용할 아이디와 비밀번호를 입력해주세요",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -135,17 +126,17 @@ class _MyRegisterPageState extends State<MyRegisterPage> {
                 padding: EdgeInsets.all(10),
                 child: ElevatedButton(
                   onPressed: () {
-                    id = idTextEditingController.text;
-                    password = pwTextEditingController.text;
+                    String id = idTextEditingController.text;
+                    String password = pwTextEditingController.text;
                     String passwordCheck = pwCheckTextEditingController.text;
 
                     (id == '' || password == '' || passwordCheck == '')
                         ? showPopUp(
-                            context, "회원가입에 실패했습니다.\n아이디나 비밀번호를 입력해주세요.", false)
+                            context, "아이디, 비밀번호 칸을\n모두 채워주세요.", false)
                         : ((password == passwordCheck)
-                            ? register(context)
+                            ? register(context, id, password)
                             : showPopUp(context,
-                                "회원가입에 실패했습니다.\n입력하신 비밀번호가 불일치합니다.", false));
+                                "비밀번호가 불일치합니다.\n다시 확인해주세요.", false));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,

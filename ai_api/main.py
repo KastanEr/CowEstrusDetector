@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Depends, HTTPException, File, Request, UploadFile, Form
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -70,6 +69,9 @@ async def upload_file_and_predict(request: Request, location: int = Form(...), c
     image_name = current_time
 
     results = detector.predict(image_path=image_path, image_name=image_name)
+
+    if results is None:
+        raise HTTPException(status_code=422, detail="Prediction failed")
 
     if "mounting" in results["classes"]:
         try:

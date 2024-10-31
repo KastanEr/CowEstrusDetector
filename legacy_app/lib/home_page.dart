@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  final String token;
+  const MyHomePage({super.key, required this.token});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -343,7 +344,7 @@ class _MyHomePageState extends State<MyHomePage> {
             case 0:
               context.go('/history');
             case 2:
-              context.go('/statistics');
+              context.go('/statistics', extra: widget.token);
           }
         },
       ),

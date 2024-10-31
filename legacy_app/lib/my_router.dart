@@ -20,7 +20,7 @@ final router = GoRouter(routes: [
   ),
   GoRoute(
     path: '/home',
-    builder: (context, state) => MyHomePage(),
+    builder: (context, state) => MyHomePage(token: state.extra as String),
   ),
   GoRoute(
     path: '/alarm',
@@ -38,6 +38,6 @@ final router = GoRouter(routes: [
   ),
   GoRoute(
     path: '/statistics',
-    builder: (context, state) => const MyStatisticsPage(),
+    builder: (context, state) => MyStatisticsPage(token: state.extra as String),
   ),
 ]);
