@@ -151,7 +151,7 @@ class _MyStatisticsPageState extends State<MyStatisticsPage> {
       lst.add(PieChartSectionData(
         color: color[i],
         value: percent,
-        title: '$percent%',
+        title: '${percent.toStringAsFixed(1)}%',
         radius: radius,
         titleStyle: const TextStyle(
           fontSize: fontSize,
