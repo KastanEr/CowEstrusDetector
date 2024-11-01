@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Depends, HTTPException, File, Request, UploadFile, Form
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -8,7 +7,7 @@ from sqlalchemy.orm import Session
 from pydantic import ValidationError
 from database import init_db, SessionLocal
 import crud, schemas, auth
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from detector import CowBehaviorDetector
 from typing import List
 import os
@@ -59,7 +58,7 @@ async def get_image(image_name: str):
 
 @app.post("/upload/")
 async def upload_file_and_predict(request: Request, location: int = Form(...), cctv: int = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
-    current_time = datetime.now() + timedelta(hours=9)
+    current_time = datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=9)))
     current_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
     file_location = f"{UPLOAD_DIR}/{file.filename}"
@@ -85,6 +84,9 @@ async def upload_file_and_predict(request: Request, location: int = Form(...), c
         raise HTTPException(status_code=404, detail="Prediction creation failed")
     
     detector.save_image(visualizer, prediction.id)
+
+    if results is None:
+        raise HTTPException(status_code=422, detail="Prediction failed")
 
     if "mounting" in results["classes"]:
         notification = crud.create_notification(db, location, cctv, current_time, prediction.id)

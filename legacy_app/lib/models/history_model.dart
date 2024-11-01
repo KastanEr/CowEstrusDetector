@@ -1,12 +1,13 @@
 class HistoryModel {
-  final String title, location, cctv, time, type;
+  final int id, location, cctv, pred_id;
+  final String time;
 
-  HistoryModel({required this.title, required this.location, required this.cctv, required this.time, required this.type});
+  HistoryModel({required this.id, required this.location, required this.cctv, required this.pred_id, required this.time});
 
   HistoryModel.fromJson(Map<String, dynamic> json)
-      : title = json['title'],
+      : id = json['id'],
         location = json['location'],
         cctv = json['cctv'],
-        time = json['time'],
-        type = json['class'];
+        pred_id = json['pred_id'],
+        time = json['time'];
 }
