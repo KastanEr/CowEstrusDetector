@@ -53,4 +53,4 @@
    ```
 
 4. **Swagger UI 접속**  
-   서버가 실행된 후 http://localhost:8000/docs에서 API 문서를 확인하고 테스트할 수 있습니다.
+   서버가 실행된 후 http://localhost:8000/docs 에서 API 문서를 확인하고 테스트할 수 있습니다.
