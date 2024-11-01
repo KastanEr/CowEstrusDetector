@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class MyHistoryDetailPage extends StatefulWidget {
-  final Map detail;
+  final String detail;
   const MyHistoryDetailPage({super.key, required this.detail});
 
   @override
@@ -14,6 +14,7 @@ class MyHistoryDetailPage extends StatefulWidget {
 class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
   late Uint8List imageBytes;
   bool isLoading = true;
+  late List<String> strList = widget.detail.split("\t");
 
   @override
   void initState() {
@@ -24,7 +25,7 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
   Future<void> loadImage() async {
     try {
       imageBytes =
-          await ApiService.getImage(int.parse(widget.detail['pred_id']));
+          await ApiService.getImage(int.parse(strList[convertString2Int('pred_id')]));
     } catch (e) {
       imageBytes = Uint8List(0);
     } finally {
@@ -32,6 +33,22 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
         isLoading = false;
       });
     }
+  }
+  
+  int convertString2Int(String str) {
+    switch(str) {
+      case 'token':
+        return 0;
+      case 'location':
+        return 1;
+      case 'cctv':
+        return 2;
+      case 'time':
+        return 3;
+      case 'pred_id':
+        return 4;
+    }
+    return -1;
   }
 
   void showPopUp(BuildContext context, String msg, bool success) {
@@ -55,7 +72,7 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
                     onPressed: () {
                       success
                           ? context.go('/history',
-                              extra: widget.detail['token'])
+                              extra: strList[convertString2Int('token')])
                           : context.pop();
                     },
                     icon: const Icon(Icons.close),
@@ -70,18 +87,18 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
   }
 
   Future<void> fixPrediction(BuildContext context, int pred_id) async {
-    await ApiService.fixPrediction(widget.detail['token'], pred_id)
+    await ApiService.fixPrediction(strList[convertString2Int('token')], pred_id)
         ? showPopUp(context, "수정에 성공했습니다.", true)
         : showPopUp(context, "수정에 실패했습니다.\n다시 시도해주세요.", false);
   }
 
   @override
   Widget build(BuildContext context) {
-    String token = widget.detail['token'];
-    int location = int.parse(widget.detail['location']);
-    int cctv = int.parse(widget.detail['cctv']);
-    String time = widget.detail['time'] as String;
-    int pred_id = int.parse(widget.detail['pred_id']);
+    String token = strList[convertString2Int('token')];
+    int location = int.parse(strList[convertString2Int('location')]);
+    int cctv = int.parse(strList[convertString2Int('cctv')]);
+    String time = strList[convertString2Int('time')];
+    int pred_id = int.parse(strList[convertString2Int('pred_id')]);
 
     return Scaffold(
       appBar: AppBar(

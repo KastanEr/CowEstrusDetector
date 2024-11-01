@@ -208,13 +208,7 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
           title: Text('${history.location}구획에서 승가 행위가 감지되었습니다.'),
           subtitle: Text(
               '${history.time.split(' ')[1].split(':')[0]}:${history.time.split(' ')[1].split(':')[1]}'),
-          onTap: () => context.go('/history/history_detail', extra: {
-            'token': widget.token,
-            'location': history.location.toString(),
-            'cctv': history.cctv.toString(),
-            'time': history.time,
-            'pred_id': history.pred_id.toString()
-          }),
+          onTap: () => context.go('/history/history_detail', extra: "${widget.token}\t${history.location}\t${history.cctv}\t${history.time}\t${history.pred_id}"),
         );
       },
       separatorBuilder: (context, index) => const SizedBox(

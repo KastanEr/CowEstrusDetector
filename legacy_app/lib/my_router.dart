@@ -34,7 +34,7 @@ final router = GoRouter(
         GoRoute(
           path: 'history_detail',
           builder: (context, state) =>
-              MyHistoryDetailPage(detail: state.extra as Map),
+              MyHistoryDetailPage(detail: state.extra as String),
         ),
       ],
     ),
