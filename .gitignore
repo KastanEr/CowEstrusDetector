@@ -13,5 +13,8 @@ __pycache__/
 # Prediction Image
 ai_api/static/pred_image/*
 
+# test app
+test_app/
+
 # ETC
 etc/
