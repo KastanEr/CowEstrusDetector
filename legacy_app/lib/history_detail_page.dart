@@ -86,8 +86,8 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
     );
   }
 
-  Future<void> fixPrediction(BuildContext context, int pred_id) async {
-    await ApiService.fixPrediction(strList[convertString2Int('token')], pred_id)
+  Future<void> fixPrediction(BuildContext context, int predId) async {
+    await ApiService.fixPrediction(strList[convertString2Int('token')], predId)
         ? showPopUp(context, "수정에 성공했습니다.", true)
         : showPopUp(context, "수정에 실패했습니다.\n다시 시도해주세요.", false);
   }
@@ -98,7 +98,7 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
     int location = int.parse(strList[convertString2Int('location')]);
     int cctv = int.parse(strList[convertString2Int('cctv')]);
     String time = strList[convertString2Int('time')];
-    int pred_id = int.parse(strList[convertString2Int('pred_id')]);
+    int predId = int.parse(strList[convertString2Int('pred_id')]);
 
     return Scaffold(
       appBar: AppBar(
@@ -176,6 +176,7 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
                     children: [
                       Expanded(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text("이미지를 확인해주세요.",
                                 style: TextStyle(fontSize: 23)),
@@ -183,7 +184,6 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
                                 style: TextStyle(fontSize: 23)),
                             Text("눌러서 수정해주세요.", style: TextStyle(fontSize: 23)),
                           ],
-                          mainAxisAlignment: MainAxisAlignment.center,
                         ),
                       ),
                     ],
@@ -201,7 +201,7 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
                     backgroundColor: Colors.green,
                     minimumSize: const Size.fromHeight(30),
                   ),
-                  onPressed: () => fixPrediction(context, pred_id),
+                  onPressed: () => fixPrediction(context, predId),
                   child: const Text('수정하기',
                       style: TextStyle(color: Colors.white, fontSize: 30)),
                 ),

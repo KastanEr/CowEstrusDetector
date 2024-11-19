@@ -73,7 +73,7 @@ class _MyStatisticsPageState extends State<MyStatisticsPage> {
           cnt += 1.0;
         }
       }
-      if (snapshot.data!.length == 0) {
+      if (snapshot.data!.isEmpty) {
         return 1000;
       } else {
         return cnt / snapshot.data!.length * 100;
@@ -167,7 +167,7 @@ class _MyStatisticsPageState extends State<MyStatisticsPage> {
       ));
     }
 
-    if (lst.length == 0) {
+    if (lst.isEmpty) {
       lst.add(PieChartSectionData(
         color: Colors.grey,
         value: 100,

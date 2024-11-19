@@ -87,8 +87,8 @@ class ApiService {
     return historyInstances;
   }
 
-  static Future<bool> fixPrediction(String token, int pred_id) async {
-    final url = Uri.parse('$baseUrl/predictions/confirm/$pred_id?confirm=2');
+  static Future<bool> fixPrediction(String token, int predId) async {
+    final url = Uri.parse('$baseUrl/predictions/confirm/$predId?confirm=2');
     Map<String, String> headers = {
       'accept': 'application/json',
       'Authorization': 'Bearer $token'
@@ -97,8 +97,8 @@ class ApiService {
     return (response.statusCode == 200 ? true : false);
   }
 
-  static Future<Uint8List> getImage(int pred_id) async {
-    final url = Uri.parse('$baseUrl/image/$pred_id.jpg');
+  static Future<Uint8List> getImage(int predId) async {
+    final url = Uri.parse('$baseUrl/image/$predId.jpg');
     final response = await http.get(url, headers: getHeadersWithoutToken);
 
     if (response.statusCode == 200) {
@@ -106,5 +106,12 @@ class ApiService {
     }
 
     throw Error();
+  }
+
+  static Future<bool> sendFcmToken(String fcmtoken) async {
+    final url = Uri.parse('$baseUrl/fcmtoken/');
+    final body = {"fcmtoken": fcmtoken};
+    final response = await http.post(url, headers: postHeaders, body: json.encode(body));
+    return (response.statusCode == 200 ? true : false);
   }
 }

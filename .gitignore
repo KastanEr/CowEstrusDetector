@@ -13,6 +13,9 @@ __pycache__/
 # Prediction Image
 ai_api/static/pred_image/*
 
+# Service Account File
+ai_api/*.json
+
 # test app
 test_app/
 
