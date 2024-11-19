@@ -39,7 +39,7 @@
    ```
    필요한 시스템 패키지를 설치합니다.
    ```bash
-   pip install torch torchvision opencv-python fastapi uvicorn sqlalchemy pyjwt python-multipart
+   pip install torch torchvision opencv-python fastapi uvicorn sqlalchemy pyjwt python-multipart pyfcm
    ```
    Python의 필수 라이브러리를 설치합니다.
    ```bash
