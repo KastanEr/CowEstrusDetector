@@ -19,5 +19,8 @@ ai_api/*.json
 # test app
 test_app/
 
+# model file
+*.pth
+
 # ETC
 etc/
