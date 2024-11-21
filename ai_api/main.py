@@ -11,9 +11,16 @@ from datetime import datetime, timedelta, timezone
 from detector import CowBehaviorDetector
 from typing import List
 import os
+from pyfcm import FCMNotification
 
 model_path = "model.pth"
 save_dir = "./static/pred_image"
+project_id = "your_project_id"  # write your project_id
+service_account_file = "./service_account_file.json"   # use your firebase project service account file
+
+# you can get your service account file from : https://console.firebase.google.com/project/your_project_id/settings/serviceaccounts/adminsdk
+
+fcm_token = ''
 
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
@@ -23,6 +30,8 @@ detector = CowBehaviorDetector(model_path=model_path)
 app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+fcm = FCMNotification(service_account_file=service_account_file, project_id=project_id)
 
 init_db()
 
@@ -39,6 +48,13 @@ templates = Jinja2Templates(directory="templates")
 
 UPLOAD_DIR = "./static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@app.post("/fcmtoken/")
+async def receive_fcmtoken(request: Request):
+    global fcm_token
+    body = await request.json()
+    fcm_token = body.get("fcmtoken")
+    return {"fcm_token": fcm_token}
 
 @app.get("/", response_class=HTMLResponse)
 async def get_root(request: Request):
@@ -92,6 +108,11 @@ async def upload_file_and_predict(request: Request, location: int = Form(...), c
         notification = crud.create_notification(db, location, cctv, current_time, prediction.id)
         if not notification:
             raise HTTPException(status_code=404, detail="Notification creation failed")
+        else:
+            notification_title = "승가 탐지!"
+            notification_body = "알림에서 세부 내용을 확인하시길 바랍니다."
+            notification_image = None
+            fcm.notify(fcm_token=fcm_token, notification_title=notification_title, notification_body=notification_body, notification_image=notification_image)
 
     return JSONResponse(content={"image_name": f"{prediction.id}"})
 
