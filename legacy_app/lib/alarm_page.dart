@@ -85,7 +85,7 @@ class _MyAlarmPageState extends State<MyAlarmPage> {
           ),
           title: Text(
               '${history.location}구획에서 ${history.time.split(' ')[1].split(':')[0]}시 ${history.time.split(' ')[1].split(':')[1]}분에 승가 행위가 감지되었습니다. 확인 바랍니다.'),
-          onTap: () => context.go('/history/history_detail', extra: "${widget.token}\t${history.location}\t${history.cctv}\t${history.time}\t${history.pred_id}"),
+          onTap: () => context.push('/history/history_detail', extra: "${widget.token}\t${history.location}\t${history.cctv}\t${history.time}\t${history.pred_id}"),
         );
       },
       separatorBuilder: (context, index) => const SizedBox(
