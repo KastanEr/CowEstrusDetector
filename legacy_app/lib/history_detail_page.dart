@@ -105,7 +105,7 @@ class _MyHistoryDetailPageState extends State<MyHistoryDetailPage> {
         backgroundColor: Colors.green,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.go('/history', extra: token),
+          onPressed: () => context.pop(),
         ),
         title: const Center(
           child: Text("상세 내역", style: TextStyle(color: Colors.white)),
