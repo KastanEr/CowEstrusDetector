@@ -21,14 +21,17 @@
 
 ## 설치 및 실행 방법
 1. **프로젝트 클론**
-
    ```bash
    git clone https://github.com/KastanEr/CowEstrusDetector.git
    ```
    ```bash
    cd CowEstrusDetector/ai_api
    ```  
-2. **요구사항 설치**
+
+2. **모델 다운로드**  
+   [Google Drive 링크](https://drive.google.com/file/d/1JaSq2qgo8gM3uOHgEdYbvLdcjxNwMMQl/view?usp=share_link)를 클릭하여 모델 파일을 다운로드하고, 다운로드한 파일을 프로젝트의 루트 디렉토리 아래 `ai_api` 폴더에 배치하세요.  
+
+3. **요구사항 설치**
    ```bash
    apt update
    ```
@@ -46,12 +49,12 @@
    ```
    Detectron2 모델을 설치합니다.
 
-3. **API 실행**
+4. **API 실행**
    ```bash
-   uvicorn main:app --reload
+   uvicorn main:app --host 0.0.0.0 --reload
    ```
 
-4. **Swagger UI 접속**  
+5. **Swagger UI 접속**  
    서버가 실행된 후 http://localhost:8000/docs 에서 API 문서를 확인하고 테스트할 수 있습니다.
 
 ## 모델 학습과정 및 성능 안내
